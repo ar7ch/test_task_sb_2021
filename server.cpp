@@ -43,21 +43,24 @@ class Server {
 			listen(this->listen_sfd, this->max_queue);
 			socklen_t inter_addr_len = sizeof(struct sockaddr_un);
 			this->inter_fd = accept(listen_sfd, (struct sockaddr *) &(this->inter_addr), &(inter_addr_len));
-			cout << "accepted incoming connection" << endl;
+			cerr << "SERVER: accepted incoming connection" << endl;
 			ssize_t recv_len = recv(this->inter_fd, buf, 160, 0);
 			if (recv_len < 0) {
 				perror("recv");
 				exit(EXIT_FAILURE);
 			}
-			/*
-			ThreatScanner ts(path);
+					
+			ThreatScanner ts(buf);
             ThreatScanReport tr = ts.scan_all();
-			tr.print_report();*/
-    
-			cout << string(buf);
-			send(this->inter_fd, buf, strlen(buf), 0);			
+			string str = tr.get_report().str();
+			const char * report_ptr = str.c_str();
+			if (send(this->inter_fd, report_ptr, strlen(report_ptr), 0) < 0) {
+				perror("send");
+				exit(EXIT_FAILURE);
+			};	
+
 			close(this->inter_fd);
-			cout << "connection closed" << endl;
+			cerr << "SERVER: connection closed" << endl;
 		}
 	}
 	private:
