@@ -31,14 +31,34 @@ class Client {
 			exit(EXIT_FAILURE);
 		}
 		cout << "Connected to server" << endl;
+
 	}
 	
-	void io_server() {
-		char message[20] = "Hello world\n";
-		if (send(this->inter_fd, message, strlen(message), 0) == -1) {
+	void send_server(char * message) {
+		size_t bytes_sent;
+		if ((bytes_sent = send(this->inter_fd, message, strlen(message), 0)) < 0) {
 			perror("send");
 			exit(EXIT_FAILURE);
 		}
+		cout << "CLIENT: successfully sent " << bytes_sent << " bytes" << endl;
+	}
+
+	void recv_server() {
+		this->buf = new char[buf_size];
+		memset(buf, '\0', buf_size);
+		size_t bytes_recv;
+		if ((bytes_recv=recv(this->inter_fd, buf, buf_size, 0)) < 0) {
+			perror("recv");
+			exit(EXIT_FAILURE);
+		}
+		cout << "CLIENT: successfully recieved " << bytes_recv << " bytes" << endl;
+	}
+	
+	string buf2str() {
+		return string(this->buf);
+	}
+
+	void disconnect() {
 		close(this->inter_fd);
 	}
 
@@ -46,6 +66,8 @@ class Client {
 	int inter_fd;
 	struct sockaddr_un inter_addr;
 	char socket_addr[160]="/home/artem/task1/scan_service.socket";
+	char * buf;
+	size_t buf_size = 500;
 		
 };
 
@@ -61,7 +83,10 @@ int main(int argc, char ** argv) {
 			Client client;
 			client.init_client();
 			client.connect_server();
-			client.io_server();
+			client.send_server(argv[1]);
+			client.recv_server();
+			cout << client.buf2str() << endl;
+			client.disconnect();
         }
         catch (const invalid_argument& ia) {
             cerr << "ERROR: " << ia.what() << endl; 
