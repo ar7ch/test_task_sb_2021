@@ -2,7 +2,9 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
-
+#include <chrono>
+#include <ctime>
+#include <ratio>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -37,7 +39,16 @@ class ThreatScanReport : ScanReport {
 			files_scanned++;
 			(this->threats[type])++;
         }
-        
+
+   		inline void start_time_meas() {
+			this->time_begin = chrono::steady_clock::now();
+		}
+
+		inline void stop_time_meas() {
+			this->time_end = chrono::steady_clock::now();
+			this->time_delta = chrono::duration_cast<chrono::duration<double, chrono::milliseconds::period>>(time_end-time_begin);
+		}
+
         void print_report() {
             cout << "====== Scan result ======" << endl;
             cout << "Processed files: " << this->files_scanned << endl;
@@ -45,14 +56,18 @@ class ThreatScanReport : ScanReport {
             cout << "Unix detects: " << this->threats[ThreatScanReport::threat_status::UNIX_THREAT] << endl;
             cout << "macOS detects: " << this->threats[ThreatScanReport::threat_status::MACOS_THREAT] << endl;
             cout << "Errors: " << this->errors << endl;
-            cout << "Execution time: " << this->exec_time << endl; // TODO implement exec time
+            cout << "Execution time (mm:ss:ms): " << 
+				(int)(this->time_delta.count()/60000) << ":" << 
+				(int)(this->time_delta.count()/1000) << ":" <<
+				(int)(this->time_delta.count())%1000 << endl; // ugly but seems optimal without using C++20 or cstdlib
 			cout << "=========================" << endl;
         }
 
         private:
         array<int,5> threats;
-        int exec_time = 0; // TODO replace with chrono::duration
-
+		chrono::time_point<chrono::steady_clock> time_begin, time_end;
+		chrono::duration<double, chrono::milliseconds::period> time_delta;
+		string mm_ss_ms;
 };
 
 class Scanner {
@@ -84,11 +99,16 @@ class ThreatScanner : Scanner {
 
         ThreatScanReport scan_all() {
             ThreatScanReport report;
+			//  Assuming the only I/O-intense process is iterating through the files in the directory,
+			// 	we can begin time measurement from here...
+			report.start_time_meas();
             for (const fs::directory_entry & entry : this->dir_it) {
                 // TODO overload += for ScanReport, return report from scan_file and sum it 
                 threat_type typ = scan_file(entry);
                 report.add_threat(typ);
             }
+			// and end it here
+			report.stop_time_meas();
             return report;
         }
 
