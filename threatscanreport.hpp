@@ -3,8 +3,10 @@
 
 #include "scanreport.hpp"
 #include <chrono>
+#include <sstream>
 
 typedef int threat_type;
+using namespace std;
 
 class ThreatScanReport : ScanReport {
        public:
@@ -19,12 +21,12 @@ class ThreatScanReport : ScanReport {
         void add_threat(threat_type);
    		void start_time_meas();
 		void stop_time_meas();
-        void print_report();
+        stringstream get_report();
 
         private:
         std::array<int,5> threats;
 		std::chrono::time_point<std::chrono::steady_clock> time_begin, time_end;
-		std::chrono::duration<double, std::chrono::milliseconds::period> time_delta;
+		std::chrono::duration<double, std::chrono::microseconds::period> time_delta;
 };
 
 #endif

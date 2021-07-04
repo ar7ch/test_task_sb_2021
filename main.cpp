@@ -15,7 +15,7 @@ int main(int argc, char ** argv) {
 			const string path(argv[1]);
             ThreatScanner ts(path);
             ThreatScanReport tr = ts.scan_all();
-			tr.print_report();
+			cout << tr.get_report().str();
         }
         catch (const invalid_argument& ia) {
             cerr << "ERROR: " << ia.what() << endl; 
