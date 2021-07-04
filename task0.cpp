@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 
@@ -21,10 +22,11 @@ class ScanReport {
 class ThreatScanReport : ScanReport {
        public:
        struct threat_status {
-            inline static const int ERROR = 0; 
-            inline static const int JS_THREAT = 1;
-            inline static const int UNIX_THREAT = 2;
-            inline static const int MACOS_THREAT = 3;
+            inline static const int CLEAN = 0; 
+            inline static const int ERROR = 1; 
+            inline static const int JS_THREAT = 2;
+            inline static const int UNIX_THREAT = 3;
+            inline static const int MACOS_THREAT = 4;
         };
         
         ThreatScanReport() {
@@ -32,31 +34,33 @@ class ThreatScanReport : ScanReport {
         }
 
         void add_threat(threat_type type) {
-            (this->threats[type])++;
+			files_scanned++;
+			(this->threats[type])++;
         }
         
-        void get_report() {
-            cout << "===== Scan result =====" << endl;
+        void print_report() {
+            cout << "====== Scan result ======" << endl;
             cout << "Processed files: " << this->files_scanned << endl;
             cout << "JS detects: " << this->threats[ThreatScanReport::threat_status::JS_THREAT] << endl;
             cout << "Unix detects: " << this->threats[ThreatScanReport::threat_status::UNIX_THREAT] << endl;
             cout << "macOS detects: " << this->threats[ThreatScanReport::threat_status::MACOS_THREAT] << endl;
             cout << "Errors: " << this->errors << endl;
             cout << "Execution time: " << this->exec_time << endl; // TODO implement exec time
+			cout << "=========================" << endl;
         }
 
         private:
-        array<int,4> threats;
+        array<int,5> threats;
         int exec_time = 0; // TODO replace with chrono::duration
 
-        
 };
 
 class Scanner {
     protected:
         fs::directory_iterator dir_it;
         string path;
-
+	
+	public:
     Scanner(string path) {
         this->dir_it = fs::directory_iterator(path);
         this->path = path; 
@@ -73,6 +77,11 @@ class ThreatScanner : Scanner {
             inline static const string MACOS_THREAT = "system(\"launchctl load /Library/LaunchAgents/com.malware.agent\")";
         };
     public:
+
+		ThreatScanner(string path) : Scanner(path) {
+
+		}
+
         ThreatScanReport scan_all() {
             ThreatScanReport report;
             for (const fs::directory_entry & entry : this->dir_it) {
@@ -94,20 +103,37 @@ class ThreatScanner : Scanner {
                 // вообще говоря, об ошибке желательно сообщать исключением, но в рамках задания ошибки считаются частью отчета
                 if (file.fail()) return ThreatScanReport::threat_status::ERROR;
                 else {
-                    if(line.find(ThreatScanner::threat_patterns::JS_THREAT)) {
+                    if(line.find(ThreatScanner::threat_patterns::JS_THREAT) != string::npos) {
                         return ThreatScanReport::threat_status::JS_THREAT;
                     }
-                    if(line.find(ThreatScanner::threat_patterns::UNIX_THREAT)) {
+                    if(line.find(ThreatScanner::threat_patterns::UNIX_THREAT) != string::npos) {
                         return ThreatScanReport::threat_status::UNIX_THREAT;
                     }
-                    if(line.find(ThreatScanner::threat_patterns::MACOS_THREAT)) {
+                    if(line.find(ThreatScanner::threat_patterns::MACOS_THREAT) != string::npos) {
                         return ThreatScanReport::threat_status::MACOS_THREAT;
                     }
                 }
-            }        
+            }
+			return ThreatScanReport::threat_status::CLEAN;
         }
 };
 
 int main(int argc, char ** argv) {
+    if (argc != 2) { 
+        printf("usage: %s <path to directory>\n", argv[0]);
+        return 1;
+    }
+    else {
+        try {
+			const string path(argv[1]);
+            ThreatScanner ts(path);
+            ThreatScanReport tr = ts.scan_all();
+			tr.print_report();
+        }
+        catch (...) {
+            printf("error");
+            return 2;
+        }
+    }
     return 0;
 }
