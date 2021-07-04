@@ -77,9 +77,10 @@ class Scanner {
 	
 	public:
     Scanner(string path) {
+		if (!fs::exists(path)) throw invalid_argument("Path does not exist");
         this->dir_it = fs::directory_iterator(path);
         this->path = path; 
-        // TODO: check for directory existence and permissions
+        // TODO: check for directory permissions
     }
 
 };
@@ -140,7 +141,7 @@ class ThreatScanner : Scanner {
 
 int main(int argc, char ** argv) {
     if (argc != 2) { 
-        printf("usage: %s <path to directory>\n", argv[0]);
+		cerr << "usage: " << argv[0] << " <path to directory>" << endl;
         return 1;
     }
     else {
@@ -150,8 +151,8 @@ int main(int argc, char ** argv) {
             ThreatScanReport tr = ts.scan_all();
 			tr.print_report();
         }
-        catch (...) {
-            printf("error");
+        catch (const invalid_argument& ia) {
+            cerr << "ERROR: " << ia.what() << endl; 
             return 2;
         }
     }
