@@ -19,30 +19,49 @@ class Scanner {
 };
 
 class ThreatScanner : Scanner {
-
-    ThreatScanReport scan_all() {
-        ThreatScanReport report = new Report();
-        for (const auto & entry : this->dir_it) {
-            char typ = scan_file(entry);
-            report.fill_report(type)
+    private:
+        static struct threat_patterns {
+            string JS_THREAT = "<script>evil_script()</script>";
+            string UNIX_THREAT = "rm -rf ~/Documents";
+            string MACOS_THREAT = "system(\"launchctl load /Library/LaunchAgents/com.malware.agent\")";
         }
-    }
+    public:
+        ThreatScanReport scan_all() {
+            ThreatScanReport report;
+            for (const auto & entry : this->dir_it) {
+                // TODO overload += for ScanReport, return report from scan_file and sum it 
+                threat_type typ = scan_file(entry);
+                report.add_threat(typ);
+            }
+            return report;
+        }
 
-    char scan_file(fs::directory_entry entry) {
-        basic_ifstream f = basic_ifstream(entry.path());
-        // TODO check for errors
-        f.open();
-        // TODO implement linewise pattern search 
-        f.close();
-    }        
-
+        threat_type scan_file(fs::directory_entry entry) {
+            ifstream file(entry.path());
+            if (!file.is_open()) {
+                return ThreatScanReport.ERROR;
+            }
+            string line; line.reserve(160);
+            while(!file.eof()) {
+                getline(file, &line);
+                if(file.fail()) return threat_type.ERROR;
+                if(file.find(ThreatScanner.threat_patterns.JS_THREAT)) {
+                    return ThreatScanReport.threat_status.JS_THREAT;
+                }
+                if(file.find(ThreatScanner.threat_patterns.UNIX_THREAT)) {
+                    return ThreatScanReport.threat_status.UNIX_THREAT;
+                }
+                if(file.find(ThreatScanner.threat_patterns.MACOS_THREAT)) {
+                    return ThreatScanReport.threat_status.MACOS_THREAT;
+                }
+            }        
+        }
 };
 
 class ScanReport {
     private:
         int files_scanned;
         int errors;
-
     ScanReport() {
         this->files_scanned = 0;
         this->errors = 0;
@@ -51,23 +70,26 @@ class ScanReport {
 
 class ThreatScanReport : ScanReport {
     private:
-        int threats[3];
+        array<int> threats;
+        int exec_time = 0; // TODO replace with chrono::duration
 
     public:
-        int JS_THREAT = 0;
-        int UNIX_THREAT = 1;
-        int MACOS_THREAT = 2;
+        static struct threat_status {
+            int ERROR = 0 : 1; 
+            int JS_THREAT = 1 : 2;
+            int UNIX_THREAT = 2 : 2;
+            int MACOS_THREAT = 3 : 2;
+        }
 
     ThreatScanReport() {
-        this->js_threats = 0;
-        this->unix_threats = 0;
-        this->macos_threats = 0;
-    }
+        threats.fill(0);
+   }
 
     void add_threat(threat_type type) {
         (this->threats[type])++;
     }
-
+    
+    void fill_report
     void get_report() {
         cout << "===== Scan result =====" << endl;
         cout << "Processed files: " << this->files_scanned << endl;
