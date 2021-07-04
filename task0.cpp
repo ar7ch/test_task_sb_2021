@@ -1,12 +1,59 @@
 #include <iostream>
 #include <filesystem>
+#include <fstream>
+
 
 using namespace std;
 namespace fs = std::filesystem;
 typedef int threat_type;
 
+class ScanReport {
+    protected:
+        int files_scanned;
+        int errors;
+    public:
+    ScanReport() {
+        this->files_scanned = 0;
+        this->errors = 0;
+    }
+};
+
+class ThreatScanReport : ScanReport {
+       public:
+       struct threat_status {
+            inline static const int ERROR = 0; 
+            inline static const int JS_THREAT = 1;
+            inline static const int UNIX_THREAT = 2;
+            inline static const int MACOS_THREAT = 3;
+        };
+        
+        ThreatScanReport() {
+            threats.fill(0);
+        }
+
+        void add_threat(threat_type type) {
+            (this->threats[type])++;
+        }
+        
+        void get_report() {
+            cout << "===== Scan result =====" << endl;
+            cout << "Processed files: " << this->files_scanned << endl;
+            cout << "JS detects: " << this->threats[ThreatScanReport::threat_status::JS_THREAT] << endl;
+            cout << "Unix detects: " << this->threats[ThreatScanReport::threat_status::UNIX_THREAT] << endl;
+            cout << "macOS detects: " << this->threats[ThreatScanReport::threat_status::MACOS_THREAT] << endl;
+            cout << "Errors: " << this->errors << endl;
+            cout << "Execution time: " << this->exec_time << endl; // TODO implement exec time
+        }
+
+        private:
+        array<int,4> threats;
+        int exec_time = 0; // TODO replace with chrono::duration
+
+        
+};
+
 class Scanner {
-    private:
+    protected:
         fs::directory_iterator dir_it;
         string path;
 
@@ -20,15 +67,15 @@ class Scanner {
 
 class ThreatScanner : Scanner {
     private:
-        static struct threat_patterns {
-            string JS_THREAT = "<script>evil_script()</script>";
-            string UNIX_THREAT = "rm -rf ~/Documents";
-            string MACOS_THREAT = "system(\"launchctl load /Library/LaunchAgents/com.malware.agent\")";
-        }
+        struct threat_patterns {
+            inline static const string JS_THREAT = "<script>evil_script()</script>";
+            inline static const string UNIX_THREAT = "rm -rf ~/Documents";
+            inline static const string MACOS_THREAT = "system(\"launchctl load /Library/LaunchAgents/com.malware.agent\")";
+        };
     public:
         ThreatScanReport scan_all() {
             ThreatScanReport report;
-            for (const auto & entry : this->dir_it) {
+            for (const fs::directory_entry & entry : this->dir_it) {
                 // TODO overload += for ScanReport, return report from scan_file and sum it 
                 threat_type typ = scan_file(entry);
                 report.add_threat(typ);
@@ -36,68 +83,31 @@ class ThreatScanner : Scanner {
             return report;
         }
 
-        threat_type scan_file(fs::directory_entry entry) {
-            ifstream file(entry.path());
+        threat_type scan_file(const fs::directory_entry entry) {
+            ifstream file(entry.path(), ifstream::in);
             if (!file.is_open()) {
-                return ThreatScanReport.ERROR;
+                return ThreatScanReport::threat_status::ERROR;
             }
             string line; line.reserve(160);
-            while(!file.eof()) {
-                getline(file, &line);
-                if(file.fail()) return threat_type.ERROR;
-                if(file.find(ThreatScanner.threat_patterns.JS_THREAT)) {
-                    return ThreatScanReport.threat_status.JS_THREAT;
-                }
-                if(file.find(ThreatScanner.threat_patterns.UNIX_THREAT)) {
-                    return ThreatScanReport.threat_status.UNIX_THREAT;
-                }
-                if(file.find(ThreatScanner.threat_patterns.MACOS_THREAT)) {
-                    return ThreatScanReport.threat_status.MACOS_THREAT;
+            while (!file.eof()) {
+                getline(file, line);
+                // вообще говоря, об ошибке желательно сообщать исключением, но в рамках задания ошибки считаются частью отчета
+                if (file.fail()) return ThreatScanReport::threat_status::ERROR;
+                else {
+                    if(line.find(ThreatScanner::threat_patterns::JS_THREAT)) {
+                        return ThreatScanReport::threat_status::JS_THREAT;
+                    }
+                    if(line.find(ThreatScanner::threat_patterns::UNIX_THREAT)) {
+                        return ThreatScanReport::threat_status::UNIX_THREAT;
+                    }
+                    if(line.find(ThreatScanner::threat_patterns::MACOS_THREAT)) {
+                        return ThreatScanReport::threat_status::MACOS_THREAT;
+                    }
                 }
             }        
         }
 };
 
-class ScanReport {
-    private:
-        int files_scanned;
-        int errors;
-    ScanReport() {
-        this->files_scanned = 0;
-        this->errors = 0;
-    }
-};
-
-class ThreatScanReport : ScanReport {
-    private:
-        array<int> threats;
-        int exec_time = 0; // TODO replace with chrono::duration
-
-    public:
-        static struct threat_status {
-            int ERROR = 0 : 1; 
-            int JS_THREAT = 1 : 2;
-            int UNIX_THREAT = 2 : 2;
-            int MACOS_THREAT = 3 : 2;
-        }
-
-    ThreatScanReport() {
-        threats.fill(0);
-   }
-
-    void add_threat(threat_type type) {
-        (this->threats[type])++;
-    }
-    
-    void fill_report
-    void get_report() {
-        cout << "===== Scan result =====" << endl;
-        cout << "Processed files: " << this->files_scanned << endl;
-        cout << "JS detects: " << this->threats[JS_THREAT] << endl;
-        cout << "Unix detects: " << this->threats[UNIX_THREAT] << endl;
-        cout << "macOS detects: " << this->threat[MACOS_THREAT] << endl;
-        cout << "Errors: " << this->errors << endl;
-        cout << "Execution time: " << this->exec_time << endl; // TODO implement exec time
-    }
-        
-};
+int main(int argc, char ** argv) {
+    return 0;
+}
