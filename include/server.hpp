@@ -24,7 +24,7 @@ using namespace std;
 class Server {
 
 	public:
-	Server(std::string, int, size_t);
+	Server(string sock_addr, int max_queue, size_t buf_size);
 	~Server();
 	void setup_server();
 	void server_loop();

@@ -7,24 +7,16 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#ifndef SOCKET_ADDR
-#define SOCKET_ADDR "/tmp/scan_service.socket"
-#endif
-
-#ifndef CLIENT_BUF_SIZE
-	#define CLIENT_BUF_SIZE 500
-#endif
-
 using namespace std;
 
 class Client {
 	
 	public:
-	Client(string, size_t);
+	Client(string socket_addr, size_t buf_size);
 	~Client();
 	void init_client();
 	void connect_server();
-	void send_server(char *);
+	void send_server(char * message);
 	void recv_server();	
 	string buf2str();
 	void disconnect();

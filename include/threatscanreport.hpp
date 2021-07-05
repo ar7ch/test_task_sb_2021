@@ -4,6 +4,7 @@
 #include "scanreport.hpp"
 #include <chrono>
 #include <sstream>
+#include <array>
 
 typedef int threat_type;
 using namespace std;

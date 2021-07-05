@@ -3,6 +3,14 @@
 #include <errno.h>
 #include <client.hpp>
 
+#ifndef SOCKET_PATH
+	#define SOCKET_PATH "/tmp/scan_service.socket"
+#endif
+
+#ifndef CLIENT_BUF_SIZE
+	#define CLIENT_BUF_SIZE 300
+#endif
+
 using namespace std;
 
 int main(int argc, char ** argv) {
