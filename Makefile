@@ -3,7 +3,7 @@ GREEN = '\033[0;32m'
 NOC = '\033[0m'
 
 # project-specific settings
-SOCKET_PATH ?= '"/home/artem/scan_service.socket"'
+SOCKET_PATH ?= '"/tmp/scan_service.socket"'
 SERVER_BUF_SIZE ?= 160
 MAX_QUEUE ?= 5
 CLIENT_BUF_SIZE ?= 300

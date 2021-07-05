@@ -8,7 +8,7 @@
 #include <sys/un.h>
 
 #ifndef SOCKET_ADDR
-#define SOCKET_ADDR "$HOME/scan_service.socket"
+#define SOCKET_ADDR "/tmp/scan_service.socket"
 #endif
 
 #ifndef CLIENT_BUF_SIZE
