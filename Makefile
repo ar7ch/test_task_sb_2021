@@ -1,4 +1,4 @@
-.PHONY: build clean all
+.PHONY: all clean
 GREEN = '\033[0;32m'
 NOC = '\033[0m'
 
@@ -26,20 +26,25 @@ EXE_CLIENT := $(BIN_DIR)/scan_client
 EXE_SERVER := $(BIN_DIR)/scan_server
 EXE_UTIL   := $(BIN_DIR)/scan_util
 
-all : build clean
-build : $(EXE_CLIENT) $(EXE_SERVER) $(EXE_UTIL)
+all : $(EXE_CLIENT) $(EXE_SERVER) $(EXE_UTIL)
 
-$(EXE_CLIENT) : $(OBJ_CLIENT)
+$(EXE_CLIENT) : $(BIN_DIR) $(OBJ_DIR) $(OBJ_CLIENT) 
 	$(CXX) $(OBJ_CLIENT) $(CXXFLAGS) -o $(EXE_CLIENT) 
 	@ echo $(GREEN)"$(EXE_CLIENT) built successfully"$(NOC)
 
-$(EXE_SERVER) : $(OBJ_SERVER) $(BASE_OBJ) 
-	$(CXX) $(OBJ_SERVER) $(BASE_OBJ) $(CXXFLAGS) -o $@ 
+$(EXE_SERVER) : $(BIN_DIR) $(OBJ_DIR) $(OBJ_SERVER) $(BASE_OBJ) $(EXE_DIR) $(OBJ_DIR)
+	$(CXX) $(OBJ_SERVER) $(BASE_OBJ) $(CXXFLAGS) -o $(EXE_SERVER)
 	@echo $(GREEN)"$(EXE_SERVER) built successfully"$(NOC)
 
-$(EXE_UTIL) : $(OBJ_UTIL) $(BASE_OBJECTS) 
-	$(CXX) $(OBJ_UTIL) $(BASE_OBJ) $(CXXFLAGS) -o $@ 
+$(EXE_UTIL) : $(BIN_DIR) $(OBJ_DIR) $(OBJ_UTIL) $(BASE_OBJECTS) $(EXE_DIR) $(OBJ_DIR)
+	$(CXX) $(OBJ_UTIL) $(BASE_OBJ) $(CXXFLAGS) -o $(EXE_UTIL)
 	@ echo $(GREEN)"$(EXE_UTIL) built successfully"$(NOC)
+
+$(BIN_DIR) : 
+	mkdir -p $@
+
+$(OBJ_DIR) :
+	mkdir -p $@
 
 #$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
 #	$(CXX) -c $(SRC_DIR)/%.o $(CXXFLAGS) -o $(OBJ_DIR)/%.o
@@ -72,4 +77,4 @@ $(OBJ_DIR)/threatscanreport.o : $(SRC_DIR)/threatscanreport.cpp
 	$(CXX) -c $(SRC_DIR)/threatscanreport.cpp $(CXXFLAGS) -o $(OBJ_DIR)/threatscanreport.o
 
 clean : 
-	@ rm -rv $(BIN_DIR) $(OBJ_DIR)
+	@ rm -rv $(OBJ_DIR) $(BIN_DIR)
