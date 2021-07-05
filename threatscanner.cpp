@@ -7,10 +7,7 @@
 using namespace std;
 namespace fs = filesystem;
 
-
-ThreatScanner::ThreatScanner(string path) : Scanner(path) {
-
-}
+ThreatScanner::ThreatScanner(string path) : Scanner(path) {}
 
 ThreatScanReport ThreatScanner::scan_all() {
 	ThreatScanReport report;
@@ -35,7 +32,9 @@ threat_type ThreatScanner::scan_file(const fs::directory_entry entry) {
 	string line; line.reserve(160);
 	while (!file.eof()) {
 		getline(file, line);
-		// вообще говоря, об ошибке желательно сообщать исключением, но в рамках задания ошибки считаются частью отчета
+		/* generally speaking, it's advisable to report an error via an exception, but in terms of our task errors
+		 * are the part of report
+		 */
 		if (file.fail()) return ThreatScanReport::threat_status::ERROR;
 		else {
 			if(line.find(ThreatScanner::threat_patterns::JS_THREAT) != string::npos) {

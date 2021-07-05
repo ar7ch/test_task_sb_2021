@@ -1,6 +1,7 @@
 .PHONY: build clean
 FLAGS = -std=c++17 -Wall -Wfatal-errors 
 GREEN = '\033[0;32m'
+NOC = '\033[0m'
 
 BASE_OBJECTS = scanner.o threatscanner.o scanreport.o threatscanreport.o 
 
@@ -8,15 +9,15 @@ build : scan_util scan_server scan_client
 
 scan_client : scan_client.o client.o 
 	g++ client.o scan_client.o $(FLAGS) -o scan_client
-	@ echo $(GREEN)"scan_client built successfully"
+	@ echo $(GREEN)"scan_client built successfully"$(NOC)
 
 scan_server : scan_server.o server.o $(BASE_OBJECTS) 
 	g++ scan_server.o server.o $(BASE_OBJECTS) -o scan_server
-	@echo $(GREEN)"scan_server built successfully"
+	@echo $(GREEN)"scan_server built successfully"$(NOC)
 
 scan_util : main.o $(BASE_OBJECTS) 
 	g++ main.o $(BASE_OBJECTS) $(FLAGS) -o scan_util
-	@ echo $(GREEN)"scan_util built successfully"
+	@ echo $(GREEN)"scan_util built successfully"$(NOC)
 
 scan_client.o : scan_client.cpp
 	g++ -c scan_client.cpp $(FLAGS) -o scan_client.o

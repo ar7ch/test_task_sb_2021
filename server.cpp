@@ -59,6 +59,11 @@ void Server::server_loop() {
 		ThreatScanner ts(this->buf);
 		ThreatScanReport tr = ts.scan_all();
 		string str = tr.get_report().str();
+		/* there is a considerable overhead in sending the whole plaintext report via socket
+		 * probably the most suitable solution is serializing threatscanreport instance and sending it
+		 * however dealing with serializing, sending and deserializing binary data
+		 * would require some hours of debugging and unfortunately i'm running out of time
+		 */
 		const char * report_ptr = str.c_str();
 		if (send(this->inter_fd, report_ptr, strlen(report_ptr), 0) < 0) {
 			perror("send");
