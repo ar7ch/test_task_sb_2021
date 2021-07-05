@@ -8,7 +8,7 @@
 #include <sys/un.h>
 
 #ifndef SOCKET_PATH
-	#define SOCKET_PATH "/home/artem/scan_service.socket"
+	#define SOCKET_PATH "$HOME/scan_service.socket"
 #endif 
 
 #ifndef SERVER_BUF_SIZE

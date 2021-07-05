@@ -11,11 +11,11 @@ ThreatScanner::ThreatScanner(string path) : Scanner(path) {}
 
 ThreatScanReport ThreatScanner::scan_all() {
 	ThreatScanReport report;
-	//  Assuming the only I/O-intense process is iterating through the files in the directory,
-	// 	we can begin time measurement from here...
+	/*  Assuming the only I/O-intense process is iterating through the files in the directory,
+	 * 	we can begin time measurement from here...
+	 */
 	report.start_time_meas();
 	for (const fs::directory_entry & entry : this->dir_it) {
-		// TODO overload += for ScanReport, return report from scan_file and sum it 
 		threat_type typ = scan_file(entry);
 		report.add_threat(typ);
 	}
