@@ -10,11 +10,22 @@
 #include <sys/un.h>
 #include <errno.h>
 
+#define SOCKET_ADDR "/home/artem/task1/scan_service.socket"
+#define SERVER_BUF_SIZE 160
+#define MAX_QUEUE 5
+
 using namespace std;
 class Server {
 	public:
-	Server(){//char * socket_addr, max_queue) {
-		// TODO implement me
+	Server(string sock_addr, int max_queue, size_t buf_size) {
+		this->socket_addr = sock_addr;
+		this->max_queue = max_queue;
+		this->buf_size = buf_size;
+		this->buf = new char[this->buf_size];
+	}
+
+	~Server() {
+		delete[] this->buf;
 	}
 	
 	void setup_server() {
@@ -25,7 +36,7 @@ class Server {
 		}
 		memset(&(this->listen_addr), 0, sizeof(struct sockaddr_un));
 		this->listen_addr.sun_family = AF_UNIX;
-		strncpy(this->listen_addr.sun_path, this->socket_addr, sizeof(this->listen_addr.sun_path)-1);
+		strncpy(this->listen_addr.sun_path, this->socket_addr.c_str(), sizeof(this->listen_addr.sun_path)-1);
 		size_t struct_len = sizeof(this->listen_addr.sun_family) + strlen(this->listen_addr.sun_path);
 		unlink(listen_addr.sun_path);
 		int status = bind(this->listen_sfd, (const struct sockaddr *) &(this->listen_addr), struct_len);
@@ -36,21 +47,20 @@ class Server {
 	}
 
 	void server_loop(){
-		char buf[160];
 		while(1)
 		{
-			memset((void *)buf, '\0', 160);
+			memset(this->buf, '\0', this->buf_size);
 			listen(this->listen_sfd, this->max_queue);
 			socklen_t inter_addr_len = sizeof(struct sockaddr_un);
 			this->inter_fd = accept(listen_sfd, (struct sockaddr *) &(this->inter_addr), &(inter_addr_len));
 			cerr << "SERVER: accepted incoming connection" << endl;
-			ssize_t recv_len = recv(this->inter_fd, buf, 160, 0);
+			ssize_t recv_len = recv(this->inter_fd, this->buf, this->buf_size, 0);
 			if (recv_len < 0) {
 				perror("recv");
 				exit(EXIT_FAILURE);
 			}
-					
-			ThreatScanner ts(buf);
+			
+			ThreatScanner ts(this->buf);
             ThreatScanReport tr = ts.scan_all();
 			string str = tr.get_report().str();
 			const char * report_ptr = str.c_str();
@@ -64,17 +74,18 @@ class Server {
 		}
 	}
 	private:
-	int max_queue = 5;	
+	int max_queue;	
 	int listen_sfd; // socket listening for incoming connect
 	int inter_fd; // socket for interaction with connected client
 	struct sockaddr_un listen_addr;
 	struct sockaddr_un inter_addr;
-	char socket_addr[108] = "/home/artem/task1/scan_service.socket";  
+	char * buf;
+	size_t buf_size;
+	string socket_addr;
 };
-using namespace std;
 
 int main(int argc, char ** argv) {
-	Server server;
+	Server server(SOCKET_ADDR, MAX_QUEUE, SERVER_BUF_SIZE);
 	server.setup_server();
 	server.server_loop();
    	return 0;

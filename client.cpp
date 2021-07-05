@@ -8,12 +8,24 @@
 #include <sys/un.h>
 #include <errno.h>
 
+#define SOCKET_ADDR "/home/artem/task1/scan_service.socket"
+#define CLIENT_BUF_SIZE 500
 
 using namespace std;
 
 class Client {
 	
 	public:
+	Client(string socket_addr, size_t buf_size) {
+		this->socket_addr = socket_addr;
+		this->buf_size = buf_size;
+		this->buf = new char[buf_size];
+	}
+
+	~Client() {
+		delete[] this->buf;
+	}
+
 	void init_client(){
 		this->inter_fd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if(this->inter_fd == -1) {
@@ -23,7 +35,7 @@ class Client {
 		// it is recommended to clear struct before using for portability
 		memset(&(this->inter_addr), 0, sizeof(struct sockaddr_un));
 		this->inter_addr.sun_family = AF_UNIX;
-		strncpy(this->inter_addr.sun_path, this->socket_addr, sizeof(this->inter_addr.sun_path)-1);
+		strncpy(this->inter_addr.sun_path, this->socket_addr.c_str(), sizeof(this->inter_addr.sun_path)-1);
 	}
 	void connect_server() {
 		socklen_t struct_len = strlen(this->inter_addr.sun_path) + sizeof(this->inter_addr.sun_family);
@@ -45,7 +57,6 @@ class Client {
 	}
 
 	void recv_server() {
-		this->buf = new char[buf_size];
 		memset(buf, '\0', buf_size);
 		size_t bytes_recv;
 		if ((bytes_recv=recv(this->inter_fd, buf, buf_size, 0)) < 0) {
@@ -66,9 +77,9 @@ class Client {
 	private:
 	int inter_fd;
 	struct sockaddr_un inter_addr;
-	char socket_addr[160]="/home/artem/task1/scan_service.socket";
+	string socket_addr;
 	char * buf;
-	size_t buf_size = 500;
+	size_t buf_size;
 		
 };
 
@@ -81,7 +92,7 @@ int main(int argc, char ** argv) {
         try {
 			const string path(argv[1]);
 			if (!filesystem::exists(path)) throw invalid_argument("Path does not exist");	
-			Client client;
+			Client client(SOCKET_ADDR, CLIENT_BUF_SIZE);
 			client.init_client();
 			client.connect_server();
 			client.send_server(argv[1]);
