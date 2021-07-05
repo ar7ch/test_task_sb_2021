@@ -1,50 +1,75 @@
-.PHONY: build clean
-FLAGS = -std=c++17 -Wall -Wfatal-errors 
+.PHONY: build clean all
 GREEN = '\033[0;32m'
 NOC = '\033[0m'
 
-BASE_OBJECTS = scanner.o threatscanner.o scanreport.o threatscanreport.o 
+# project-specific settings
+SOCKET_PATH ?= '"/home/artem/scan_service.socket"'
+SERVER_BUF_SIZE ?= 160
+MAX_QUEUE ?= 5
+CLIENT_BUF_SIZE ?= 300
 
-build : scan_util scan_server scan_client
+#
+INCL_DIR := include
+SRC_DIR := src
+OBJ_DIR := obj
+BIN_DIR := bin
+CXX := g++
+CXXFLAGS := -std=c++17 -Wall -Wfatal-errors -I\$(INCL_DIR) -DSOCKET_PATH=$(SOCKET_PATH) -DSERVER_BUF_SIZE=$(SERVER_BUF_SIZE) -DMAX_QUEUE=$(MAX_QUEUE) -DCLIENT_BUF_SIZE=$(CLIENT_BUF_SIZE)
+CPPFLAGS := 
 
-scan_client : scan_client.o client.o 
-	g++ client.o scan_client.o $(FLAGS) -o scan_client
-	@ echo $(GREEN)"scan_client built successfully"$(NOC)
+OBJ_CLIENT = $(OBJ_DIR)/client.o $(OBJ_DIR)/scan_client.o 
+OBJ_SERVER = $(OBJ_DIR)/server.o $(OBJ_DIR)/scan_server.o
+OBJ_UTIL = $(OBJ_DIR)/scan_util.o
+BASE_OBJ = $(OBJ_DIR)/scanner.o $(OBJ_DIR)/threatscanner.o $(OBJ_DIR)/scanreport.o $(OBJ_DIR)/threatscanreport.o 
 
-scan_server : scan_server.o server.o $(BASE_OBJECTS) 
-	g++ scan_server.o server.o $(BASE_OBJECTS) -o scan_server
-	@echo $(GREEN)"scan_server built successfully"$(NOC)
+EXE_CLIENT := $(BIN_DIR)/scan_client
+EXE_SERVER := $(BIN_DIR)/scan_server
+EXE_UTIL   := $(BIN_DIR)/scan_util
 
-scan_util : main.o $(BASE_OBJECTS) 
-	g++ main.o $(BASE_OBJECTS) $(FLAGS) -o scan_util
-	@ echo $(GREEN)"scan_util built successfully"$(NOC)
+all : build clean
+build : $(EXE_CLIENT) $(EXE_SERVER) $(EXE_UTIL)
 
-scan_client.o : scan_client.cpp
-	g++ -c scan_client.cpp $(FLAGS) -o scan_client.o
+$(EXE_CLIENT) : $(OBJ_CLIENT)
+	$(CXX) $(OBJ_CLIENT) $(CXXFLAGS) -o $(EXE_CLIENT) 
+	@ echo $(GREEN)"$(EXE_CLIENT) built successfully"$(NOC)
 
-client.o : client.cpp
-	g++ -c client.cpp $(FLAGS) -o client.o
+$(EXE_SERVER) : $(OBJ_SERVER) $(BASE_OBJ) 
+	$(CXX) $(OBJ_SERVER) $(BASE_OBJ) $(CXXFLAGS) -o $@ 
+	@echo $(GREEN)"$(EXE_SERVER) built successfully"$(NOC)
 
-scan_server.o : scan_server.cpp
-	g++ -c scan_server.cpp $(FLAGS) -o scan_server.o	
+$(EXE_UTIL) : $(OBJ_UTIL) $(BASE_OBJECTS) 
+	$(CXX) $(OBJ_UTIL) $(BASE_OBJ) $(CXXFLAGS) -o $@ 
+	@ echo $(GREEN)"$(EXE_UTIL) built successfully"$(NOC)
 
-server.o : server.cpp
-	g++ -c server.cpp $(FLAGS) -o server.o
+#$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
+#	$(CXX) -c $(SRC_DIR)/%.o $(CXXFLAGS) -o $(OBJ_DIR)/%.o
 
-main.o : main.cpp
-	g++ -c main.cpp $(FLAGS) -o main.o
+$(OBJ_DIR)/scan_client.o : $(SRC_DIR)/scan_client.cpp
+	$(CXX) -c $(SRC_DIR)/scan_client.cpp $(CXXFLAGS) -o $(OBJ_DIR)/scan_client.o
 
-scanner.o : scanner.cpp 
-	g++ -c scanner.cpp $(FLAGS) -o scanner.o
+$(OBJ_DIR)/client.o : $(SRC_DIR)/client.cpp
+	$(CXX) -c $(SRC_DIR)/client.cpp $(CXXFLAGS) -o $(OBJ_DIR)/client.o
 
-threatscanner.o : threatscanner.cpp
-	g++ -c threatscanner.cpp $(FLAGS) -o threatscanner.o
+$(OBJ_DIR)/scan_server.o : $(SRC_DIR)/scan_server.cpp
+	$(CXX) -c $(SRC_DIR)/scan_server.cpp $(CXXFLAGS) -o $(OBJ_DIR)/scan_server.o	
 
-scanreport.o : scanreport.cpp
-	g++ -c scanreport.cpp $(FLAGS) -o scanreport.o
+$(OBJ_DIR)/server.o : $(SRC_DIR)/server.cpp
+	$(CXX) -c $(SRC_DIR)/server.cpp $(CXXFLAGS) -o $(OBJ_DIR)/server.o
 
-threatscanreport.o : threatscanreport.cpp
-	g++ -c threatscanreport.cpp $(FLAGS) -o threatscanreport.o
+$(OBJ_DIR)/scan_util.o : $(SRC_DIR)/scan_util.cpp
+	$(CXX) -c $(SRC_DIR)/scan_util.cpp $(CXXFLAGS) -o $(OBJ_DIR)/scan_util.o
+
+$(OBJ_DIR)/scanner.o : $(SRC_DIR)/scanner.cpp 
+	$(CXX) -c $(SRC_DIR)/scanner.cpp $(CXXFLAGS) -o $(OBJ_DIR)/scanner.o
+
+$(OBJ_DIR)/threatscanner.o : $(SRC_DIR)/threatscanner.cpp
+	$(CXX) -c $(SRC_DIR)/threatscanner.cpp $(CXXFLAGS) -o $(OBJ_DIR)/threatscanner.o
+
+$(OBJ_DIR)/scanreport.o : $(SRC_DIR)/scanreport.cpp
+	$(CXX) -c $(SRC_DIR)/scanreport.cpp $(CXXFLAGS) -o $(OBJ_DIR)/scanreport.o
+
+$(OBJ_DIR)/threatscanreport.o : $(SRC_DIR)/threatscanreport.cpp
+	$(CXX) -c $(SRC_DIR)/threatscanreport.cpp $(CXXFLAGS) -o $(OBJ_DIR)/threatscanreport.o
 
 clean : 
-	rm *.out *.o
+	@ rm -rv $(BIN_DIR) $(OBJ_DIR)

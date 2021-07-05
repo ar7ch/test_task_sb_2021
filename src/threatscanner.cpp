@@ -1,5 +1,5 @@
-#include "threatscanner.hpp"
-#include "threatscanreport.hpp"
+#include <threatscanner.hpp>
+#include <threatscanreport.hpp>
 #include <filesystem>
 #include <string>
 #include <fstream>

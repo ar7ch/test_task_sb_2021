@@ -7,9 +7,17 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#define SOCKET_ADDR "/home/artem/task1/scan_service.socket"
-#define SERVER_BUF_SIZE 160
-#define MAX_QUEUE 5
+#ifndef SOCKET_PATH
+	#define SOCKET_PATH "/home/artem/scan_service.socket"
+#endif 
+
+#ifndef SERVER_BUF_SIZE
+	#define SERVER_BUF_SIZE 160
+#endif
+
+#ifndef MAX_QUEUE
+	#define MAX_QUEUE 5
+#endif
 
 using namespace std;
 

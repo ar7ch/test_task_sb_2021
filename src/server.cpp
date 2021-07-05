@@ -2,9 +2,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include "threatscanner.hpp"
-#include "threatscanreport.hpp"
-#include "server.hpp"
+#include <threatscanner.hpp>
+#include <threatscanreport.hpp>
+#include <server.hpp>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>

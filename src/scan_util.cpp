@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstdio>
-#include "threatscanner.hpp"
-#include "threatscanreport.hpp"
+#include <threatscanner.hpp>
+#include <threatscanreport.hpp>
 
 using namespace std;
 

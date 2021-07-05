@@ -7,8 +7,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#define SOCKET_ADDR "/home/artem/task1/scan_service.socket"
-#define CLIENT_BUF_SIZE 500
+#ifndef SOCKET_ADDR
+#define SOCKET_ADDR "$HOME/scan_service.socket"
+#endif
+
+#ifndef CLIENT_BUF_SIZE
+	#define CLIENT_BUF_SIZE 500
+#endif
 
 using namespace std;
 

@@ -1,5 +1,5 @@
-#include "threatscanner.hpp"
-#include "threatscanreport.hpp"
+#include <threatscanner.hpp>
+#include <threatscanreport.hpp>
 #include <iostream>
 #include <chrono>
 #include <ctime>
