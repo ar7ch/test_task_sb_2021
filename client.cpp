@@ -20,9 +20,10 @@ class Client {
 			perror("socket");
 			exit(EXIT_FAILURE);
 		}
-		//memset(&(this->inter_addr), 0, sizeof(struct sockaddr_un));
+		// it is recommended to clear struct before using for portability
+		memset(&(this->inter_addr), 0, sizeof(struct sockaddr_un));
 		this->inter_addr.sun_family = AF_UNIX;
-		strcpy(this->inter_addr.sun_path, this->socket_addr); // FIXME unsafe
+		strncpy(this->inter_addr.sun_path, this->socket_addr, sizeof(this->inter_addr.sun_path)-1);
 	}
 	void connect_server() {
 		socklen_t struct_len = strlen(this->inter_addr.sun_path) + sizeof(this->inter_addr.sun_family);
@@ -30,7 +31,7 @@ class Client {
 			perror("connect");
 			exit(EXIT_FAILURE);
 		}
-		cout << "Connected to server" << endl;
+		cerr << "CLIENT: Connected to server" << endl;
 
 	}
 	
@@ -40,7 +41,7 @@ class Client {
 			perror("send");
 			exit(EXIT_FAILURE);
 		}
-		cout << "CLIENT: successfully sent " << bytes_sent << " bytes" << endl;
+		cerr << "CLIENT: Successfully sent " << bytes_sent << " bytes" << endl;
 	}
 
 	void recv_server() {
@@ -51,7 +52,7 @@ class Client {
 			perror("recv");
 			exit(EXIT_FAILURE);
 		}
-		cout << "CLIENT: successfully recieved " << bytes_recv << " bytes" << endl;
+		cerr << "CLIENT: Successfully recieved " << bytes_recv << " bytes" << endl;
 	}
 	
 	string buf2str() {

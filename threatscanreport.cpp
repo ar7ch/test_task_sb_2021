@@ -33,7 +33,7 @@ stringstream ThreatScanReport::get_report() {
 		"JS detects: " << this->threats[ThreatScanReport::threat_status::JS_THREAT] << endl <<
 		"Unix detects: " << this->threats[ThreatScanReport::threat_status::UNIX_THREAT] << endl <<
 		"macOS detects: " << this->threats[ThreatScanReport::threat_status::MACOS_THREAT] << endl << 
-		"Errors: " << this->errors << endl <<
+		"Errors: " << this->threats[ThreatScanReport::threat_status::ERROR] << endl <<
 		"Execution time (ss:ms:us): " << setw(2) << setfill('0') <<
 		(int)(this->time_delta.count()/1000000) << ":" << setw(2) << setfill('0') <<
 		(int)(this->time_delta.count()/1000) << ":" << setw(2) << setfill('0') <<

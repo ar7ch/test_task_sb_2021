@@ -23,10 +23,10 @@ class Server {
 			perror("socket");
 			exit(EXIT_FAILURE);
 		}
+		memset(&(this->listen_addr), 0, sizeof(struct sockaddr_un));
 		this->listen_addr.sun_family = AF_UNIX;
-		//memset((void *)(&this->listen_addr), 0, sizeof(struct sockaddr_un));
-		strcpy(this->listen_addr.sun_path, this->socket_addr); //FIXME unsafe
-		size_t struct_len = sizeof(this->listen_addr.sun_family) + strlen(this->socket_addr);
+		strncpy(this->listen_addr.sun_path, this->socket_addr, sizeof(this->listen_addr.sun_path)-1);
+		size_t struct_len = sizeof(this->listen_addr.sun_family) + strlen(this->listen_addr.sun_path);
 		unlink(listen_addr.sun_path);
 		int status = bind(this->listen_sfd, (const struct sockaddr *) &(this->listen_addr), struct_len);
 		if(status == -1) {
@@ -64,7 +64,7 @@ class Server {
 		}
 	}
 	private:
-	int max_queue = 2;	
+	int max_queue = 5;	
 	int listen_sfd; // socket listening for incoming connect
 	int inter_fd; // socket for interaction with connected client
 	struct sockaddr_un listen_addr;
